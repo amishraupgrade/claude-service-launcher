@@ -1,0 +1,45 @@
+{
+  "services": [
+    {
+      "name": "home-improvement-merchant-srvc",
+      "githubUrl": "git@github.com:Credify/home-improvement-merechant-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "hi-merchant-reporting-srvc",
+      "githubUrl": "git@github.com:Credify/hi-merchant-reporting-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "hi-merchant-integration-srvc",
+      "githubUrl": "git@github.com:Credify/hi-merchant-integration-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "hi-merchant-review-srvc",
+      "githubUrl": "git@github.com:Credify/hi-merchant-review-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "home-improvement-creditline-srvc",
+      "githubUrl": "git@github.com:Credify/home-improvement-creditline-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "home-improvement-disbursement-srvc",
+      "githubUrl": "git@github.com:Credify/home-improvement-disbursement-srvc.git",
+      "localPath": null
+    },
+    {
+      "name": "merchant-dashboard-ui",
+      "githubUrl": "git@github.com:Credify/merchant-dashboard-ui.git",
+      "localPath": null
+    },
+    {
+      "name": "hi-dispute-srvc",
+      "githubUrl": "git@github.com:Credify/hi-dispute-srvc.git",
+      "localPath": null
+    }
+  ],
+  "cloneBaseDir": "/Users/amishra/services/repos"
+}

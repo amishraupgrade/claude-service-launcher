@@ -1,0 +1,24 @@
+{
+  "name": "claude-service-ui",
+  "version": "1.0.0",
+  "description": "UI for managing Claude Code instances across services",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm start",
+    "install-all": "npm install && cd client && npm install"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "node-pty": "^1.0.0",
+    "simple-git": "^3.20.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.1"
+  }
+}
