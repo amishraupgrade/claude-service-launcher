@@ -2,7 +2,7 @@
   "services": [
     {
       "name": "home-improvement-merchant-srvc",
-      "githubUrl": "git@github.com:Credify/home-improvement-merechant-srvc.git",
+      "githubUrl": "git@github.com:Credify/home-improvement-merchant-srvc.git",
       "localPath": null
     },
     {

@@ -1,0 +1,13 @@
+{
+  "watch": ["server/index.js"],
+  "ignore": [
+    "client/**",
+    "services.json",
+    "settings.json",
+    "recent-usage.json",
+    "*.log",
+    ".git"
+  ],
+  "delay": 2000,
+  "verbose": false
+}

@@ -14,6 +14,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [runQaAutomation, setRunQaAutomation] = useState(false);
+  const [qaEnvironment, setQaEnvironment] = useState('');
 
   useEffect(() => {
     loadServices();
@@ -24,6 +26,8 @@ function App() {
       setBranches([]);
       setPrs([]);
       setSelectedBranch('');
+      setRunQaAutomation(false);
+      setQaEnvironment('');
 
       loadBranches(selectedService);
       loadStatus(selectedService);
@@ -101,10 +105,18 @@ function App() {
     showToast('Preparing repository...', 'info');
 
     try {
+      // Find selected PR info if it's a PR branch
+      const selectedPR = prs.find(pr => pr.branch === selectedBranch);
+
       const res = await fetch(`/api/launch/${selectedService}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ branch: selectedBranch })
+        body: JSON.stringify({
+          branch: selectedBranch,
+          runQaAutomation,
+          qaEnvironment,
+          prNumber: selectedPR?.number
+        })
       });
 
       const data = await res.json();
@@ -322,6 +334,33 @@ function App() {
                   </optgroup>
                 )}
               </select>
+            </div>
+
+            <div className="qa-automation-section">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={runQaAutomation}
+                  onChange={(e) => setRunQaAutomation(e.target.checked)}
+                  disabled={loading}
+                />
+                <span>Run QA Automation</span>
+              </label>
+              {runQaAutomation && (
+                <>
+                  <input
+                    type="text"
+                    className="env-input"
+                    placeholder="Environment (e.g., dev, staging)"
+                    value={qaEnvironment}
+                    onChange={(e) => setQaEnvironment(e.target.value)}
+                    disabled={loading}
+                  />
+                  <p className="env-warning">
+                    ⚠️ Make sure you have the given service PR deployed on this environment before running tests.
+                  </p>
+                </>
+              )}
             </div>
 
             <button

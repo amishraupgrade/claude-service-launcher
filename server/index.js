@@ -176,6 +176,99 @@ end tell
     .catch(err => console.error('Error writing script:', err));
 }
 
+async function openQaAutomationTerminal(prUrl, envName, config) {
+  const qaAutomationDir = path.join(config.cloneBaseDir, 'qa-automation');
+
+  console.log('='.repeat(60));
+  console.log('QA AUTOMATION TERMINAL LAUNCH');
+  console.log('='.repeat(60));
+  console.log(`PR URL: ${prUrl}`);
+  console.log(`Environment: ${envName}`);
+  console.log(`Target Directory: ${qaAutomationDir}`);
+  console.log('='.repeat(60));
+
+  try {
+    // Ensure qa-automation repo exists
+    let dirExists = false;
+
+    // Check if directory exists
+    try {
+      await fs.access(qaAutomationDir);
+      dirExists = true;
+    } catch (error) {
+      dirExists = false;
+    }
+
+    if (dirExists) {
+      // Directory exists - try to update it
+      console.log('[qa-automation] ✓ Repo exists, pulling latest changes...');
+      const git = simpleGit(qaAutomationDir);
+
+      try {
+        // Check if it's a valid git repo
+        const isRepo = await git.checkIsRepo();
+        if (isRepo) {
+          await git.fetch();
+          await git.pull('origin', 'master');
+          console.log('[qa-automation] ✓ Repository updated successfully');
+        } else {
+          console.log('[qa-automation] ⚠ Directory exists but is not a git repo, using as-is');
+        }
+      } catch (pullError) {
+        console.log('[qa-automation] ⚠ Failed to pull latest changes, using existing repo:', pullError.message);
+      }
+    } else {
+      // Directory doesn't exist - clone it
+      console.log('[qa-automation] ⚠ Repo not found, cloning qa-automation...');
+      const parentDir = path.dirname(qaAutomationDir);
+      await fs.mkdir(parentDir, { recursive: true });
+      const git = simpleGit();
+      await git.clone('git@github.com:Credify/qa-automation.git', qaAutomationDir);
+      console.log('[qa-automation] ✓ Repository cloned successfully');
+    }
+
+    // Build the command with permissions skipped
+    const claudeCommand = `/analyze-srvc-pr ${prUrl} --run-tests ${envName}`;
+    const startCommand = `cd "${qaAutomationDir}" && clear && echo "🤖 Starting Claude for QA Automation (skip permissions)..." && echo "PR: ${prUrl}" && echo "Environment: ${envName}" && echo "" && echo "Command to execute: ${claudeCommand}" && echo "" && claude --dangerously-skip-permissions`;
+
+    console.log('[qa-automation] Command to execute in Claude:');
+    console.log(`  ${claudeCommand}`);
+
+    // AppleScript that opens Claude and then sends keystrokes to execute the command
+    const appleScript = `
+tell application "Terminal"
+    set newTab to do script "${startCommand.replace(/"/g, '\\"')}"
+    activate
+    delay 3
+    tell application "System Events"
+        keystroke "${claudeCommand.replace(/"/g, '\\"')}"
+        delay 0.5
+        keystroke return
+    end tell
+end tell
+    `.trim();
+
+    const tempFile = path.join('/tmp', `qa-launch-${Date.now()}.scpt`);
+
+    await fs.writeFile(tempFile, appleScript);
+    console.log('[qa-automation] ✓ AppleScript created, launching terminal...');
+
+    exec(`osascript "${tempFile}"`, (error, stdout) => {
+      fs.unlink(tempFile).catch(() => {});
+      if (error) {
+        console.error('[qa-automation] ✗ Error opening terminal:', error);
+      } else {
+        console.log('[qa-automation] ✓ Terminal opened and activated successfully');
+        console.log('='.repeat(60));
+      }
+    });
+  } catch (error) {
+    console.error('[qa-automation] ✗ Error in openQaAutomationTerminal:', error);
+    console.log('='.repeat(60));
+    throw error;
+  }
+}
+
 async function getActiveRepos() {
   // Return cached data if still valid
   const config = await loadSettings();
@@ -429,7 +522,7 @@ app.post('/api/launch/:serviceName', async (req, res) => {
     const config = await loadConfig();
     const allServices = await getAllServices();
     const service = allServices.find(s => s.name === req.params.serviceName);
-    const { branch } = req.body;
+    const { branch, runQaAutomation, qaEnvironment, prNumber } = req.body;
 
     if (!service) {
       return res.status(404).json({ error: 'Service not found' });
@@ -440,6 +533,26 @@ app.post('/api/launch/:serviceName', async (req, res) => {
 
     // Track usage
     await saveRecentUsage(service.name);
+
+    // If qa-automation is enabled and we have a PR, open the second terminal
+    if (runQaAutomation && prNumber) {
+      // Construct the PR URL from the service's GitHub URL
+      const match = service.githubUrl.match(/github\.com[:/](.+?)\/(.+?)(?:\.git)?$/);
+      if (match) {
+        const [, owner, repo] = match;
+        const repoName = repo.replace(/\.git$/, '');
+        const prUrl = `https://github.com/${owner}/${repoName}/pull/${prNumber}`;
+
+        console.log(`Opening QA automation terminal for PR: ${prUrl}, env: ${qaEnvironment || 'default'}`);
+
+        try {
+          await openQaAutomationTerminal(prUrl, qaEnvironment || 'dev', config);
+        } catch (qaError) {
+          console.error('Error opening QA automation terminal:', qaError);
+          // Don't fail the whole request if QA automation fails
+        }
+      }
+    }
 
     res.json({
       success: true,
