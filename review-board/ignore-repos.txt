@@ -1,0 +1,5 @@
+# Repos that never appear on the Review Board, even if a tracked author has an open PR there.
+# One repo name per line. Lines starting with # and blank lines are ignored.
+qa-automation
+qa-automation-graphql
+wiremock

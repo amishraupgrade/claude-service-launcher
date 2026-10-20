@@ -1,0 +1,20 @@
+# GitHub logins of the HI team members to track, one per line.
+# Lines starting with # and blank lines are ignored. Logins are not case sensitive.
+#
+# Any repo outside the core HI/home/merchant list that has an OPEN, non-draft PR by one of
+# these people shows up on the Review Board under "Common". Only their PRs are shown there.
+# Repos owned by the HI team (hi-*, home-*, *merchant*) always show every PR from everyone,
+# so people outside the HI team do not need to be listed.
+dazhanupgrade
+jcohenupgrade
+brimanupgrade
+roliveiraupgrade
+msilvaupgrade
+cchartrandupgrade
+rmerupgrade
+arudenkoupgrade
+dlafreniereupgrade
+iciocaupgrade
+ltavaresupgrade
+msingh1upgrade
+amishraupgrade
